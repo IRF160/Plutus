@@ -1,0 +1,49 @@
+Nix install multi user
+https://nixos.org/download.html
+
+sudo sh -c 'apt update && apt install curl rsync'
+sh <(curl -L https://nixos.org/nix/install) --daemon
+
+
+sudo sh -c 'echo "trusted-users = $0" >> /etc/nix/nix.conf' `whoami`
+sudo systemctl restart nix-daemon.service
+
+Nix Config cache
+
+cd /etc 
+sudo mkdir nix
+cd nix
+sudo vi nix.conf
+
+build-users-group = nixbld
+experimental-features = nix-command
+substituters        = https://hydra.iohk.io/ https://iohk.cachix.org/ https://cache.nixos.org/
+trusted-public-keys = hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ= iohk.cachix.org-1:DpRUyj7h7V830dp/i6Nti+NEO2/nhblbov/8MW7Rqoo= cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
+
+Verify cache config 
+nix show-config 
+
+To set up a local instance, you can follow the instructions below:
+
+Download the plutus-apps repository: 
+git clone https://github.com/input-output-hk/plutus-apps
+cd plutus-apps
+git checkout 7f53f18dfc788bf6aa929f47d840efa1247e11fd
+nix-build -A plutus-playground.server
+
+nix-shell 
+cd plutus-playground-client
+plutus-playground-server
+
+Wait for server to start, it'll log "Interpreter ready"
+
+In second terminal
+cd plutus-apps
+nix-shell 
+cd plutus-playground-client
+npm run start
+Wait for the client to start, it'll log "webpack compiled with …”
+
+6. In web browser, navigate to url https://localhost:8009/ (need to accept that ssl certificate is invalid)
+
+7. Compile and evaluate plutus code without DecodingError
